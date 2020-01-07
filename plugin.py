@@ -17,7 +17,7 @@
     <params>
         <param field="Username" label="Tesla Username" width="300px" required="true" default=""/>
         <param field="Password" label="Tesla Password" width="300px" required="true" default="" password="true"/>
-        <param field="Mode1"    label="VIN" width="300px" required="true" default=""/>
+        <param field="Mode1"    label="VIN" width="300px" default=""/>
         <param field="Mode6"    label="Logging" width="75px">
             <options>
                 <option label="Debug"   value="Debug"/>
@@ -30,7 +30,7 @@
 
 # Tesla plugin
 import Domoticz
-import myTesla
+import myTesla as mt
 import math
 from datetime import datetime, timedelta
 
@@ -45,10 +45,14 @@ class TeslaPlugin:
     teslavin = False
     # Token
     teslatoken = False
+    # The Tesla
+    my_car = False
+    # Keepit easy
+    myTesla = False
 
 
     def __init__(self):
-        return
+        pass
 
     def onStart(self):
         Domoticz.Debug("onStart: Parameters: {}".format(repr(Parameters)))
@@ -69,12 +73,17 @@ class TeslaPlugin:
             Domoticz.Log("Password set")
 
         if self.teslavin:
-            Domoticz.Log("VIN Set to : "+str(self.teslavin));
+            Domoticz.Log("VIN Set to : "+str(self.teslavin))
+        else:
+            Domoticz.Log("No VIN Set, use the first vehicle found")
+
+        if not self.myTesla:
+            self.myTesla = mt.connect(self.teslauser, self.teslapwd)
 
         # Enable the plugin
         self.enabled = True
 
-        Domoticz.Heartbeat(10)
+        Domoticz.Heartbeat(300)
 
     def onStop(self):
         Domoticz.Log("onStop called")
@@ -97,6 +106,8 @@ class TeslaPlugin:
 
     def onHeartbeat(self):
         Domoticz.Log("onHeartbeat called")
+        self.myTesla.get_access_token(email=self.teslauser, password=self.teslapwd)
+        Domoticz.Log("Vehicules : "+str(self.myTesla.vehicles()))
 
 global _plugin
 _plugin = TeslaPlugin()
