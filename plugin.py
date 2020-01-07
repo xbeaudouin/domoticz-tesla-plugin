@@ -44,15 +44,15 @@ class TeslaPlugin:
     # VIN for this module
     teslavin = False
     # Token
-    teslatoken = False
+    teslatoken = None
     # The Tesla
     my_car = False
     # Keepit easy
     myTesla = False
 
 
-    def __init__(self):
-        pass
+   # def __init__(self):
+   #     return
 
     def onStart(self):
         Domoticz.Debug("onStart: Parameters: {}".format(repr(Parameters)))
@@ -78,12 +78,13 @@ class TeslaPlugin:
             Domoticz.Log("No VIN Set, use the first vehicle found")
 
         if not self.myTesla:
-            self.myTesla = mt.connect(self.teslauser, self.teslapwd)
+            self.myTesla = mt.connect(email=self.teslauser, password=self.teslapwd,access_token=self.teslatoken)
+            self.teslatoken=self.myTesla.get_access_token(email=self.teslauser,password=self.teslapwd)
 
         # Enable the plugin
         self.enabled = True
 
-        Domoticz.Heartbeat(300)
+        Domoticz.Heartbeat(120)
 
     def onStop(self):
         Domoticz.Log("onStop called")
@@ -108,6 +109,7 @@ class TeslaPlugin:
         Domoticz.Log("onHeartbeat called")
         self.myTesla.get_access_token(email=self.teslauser, password=self.teslapwd)
         Domoticz.Log("Vehicules : "+str(self.myTesla.vehicles()))
+        Domoticz.Log("Settings  : "+str(self.myTesla.gui_settings()))
 
 global _plugin
 _plugin = TeslaPlugin()
